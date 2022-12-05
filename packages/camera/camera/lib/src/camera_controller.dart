@@ -40,9 +40,11 @@ class CameraValue {
     this.errorDescription,
     this.previewSize,
     required this.isRecordingVideo,
+    required this.isStreamingVideoRtmp,
     required this.isTakingPicture,
     required this.isStreamingImages,
     required bool isRecordingPaused,
+    required bool isStreamingPaused,
     required this.flashMode,
     required this.exposureMode,
     required this.focusMode,
@@ -53,16 +55,19 @@ class CameraValue {
     this.recordingOrientation,
     this.isPreviewPaused = false,
     this.previewPauseOrientation,
-  }) : _isRecordingPaused = isRecordingPaused;
+  }) : _isRecordingPaused = isRecordingPaused,
+        _isStreamingPaused = isStreamingPaused;
 
   /// Creates a new camera controller state for an uninitialized controller.
   const CameraValue.uninitialized()
       : this(
           isInitialized: false,
           isRecordingVideo: false,
+    isStreamingVideoRtmp: false,
           isTakingPicture: false,
           isStreamingImages: false,
           isRecordingPaused: false,
+    isStreamingPaused: false,
           flashMode: FlashMode.auto,
           exposureMode: ExposureMode.auto,
           exposurePointSupported: false,
@@ -81,10 +86,15 @@ class CameraValue {
   /// True when the camera is recording (not the same as previewing).
   final bool isRecordingVideo;
 
+  /// True when the camera is streaming to RTMP (not the same as previewing).
+  final bool isStreamingVideoRtmp;
+
   /// True when images from the camera are being streamed.
   final bool isStreamingImages;
 
   final bool _isRecordingPaused;
+
+  final bool _isStreamingPaused;
 
   /// True when the preview widget has been paused manually.
   final bool isPreviewPaused;
@@ -94,6 +104,9 @@ class CameraValue {
 
   /// True when camera [isRecordingVideo] and recording is paused.
   bool get isRecordingPaused => isRecordingVideo && _isRecordingPaused;
+
+  /// True when camera [isRecordingVideo] and recording is paused.
+  bool get isStreamingPaused => isStreamingVideoRtmp && _isStreamingPaused;
 
   /// Description of an error state.
   ///
@@ -150,11 +163,13 @@ class CameraValue {
   CameraValue copyWith({
     bool? isInitialized,
     bool? isRecordingVideo,
+    bool? isStreamingVideoRtmp,
     bool? isTakingPicture,
     bool? isStreamingImages,
     String? errorDescription,
     Size? previewSize,
     bool? isRecordingPaused,
+    bool? isStreamingPaused,
     FlashMode? flashMode,
     ExposureMode? exposureMode,
     FocusMode? focusMode,
@@ -171,9 +186,11 @@ class CameraValue {
       errorDescription: errorDescription,
       previewSize: previewSize ?? this.previewSize,
       isRecordingVideo: isRecordingVideo ?? this.isRecordingVideo,
+      isStreamingVideoRtmp: isStreamingVideoRtmp ?? this.isStreamingVideoRtmp,
       isTakingPicture: isTakingPicture ?? this.isTakingPicture,
       isStreamingImages: isStreamingImages ?? this.isStreamingImages,
       isRecordingPaused: isRecordingPaused ?? _isRecordingPaused,
+      isStreamingPaused: isStreamingPaused ?? _isStreamingPaused,
       flashMode: flashMode ?? this.flashMode,
       exposureMode: exposureMode ?? this.exposureMode,
       focusMode: focusMode ?? this.focusMode,
@@ -573,6 +590,190 @@ class CameraController extends ValueNotifier<CameraValue> {
       throw CameraException(e.code, e.message);
     }
   }
+
+  /// Start a video streaming to the url in [url`].
+  ///
+  /// This uses rtmp to do the sending the remote side.
+  ///
+  /// Throws a [CameraException] if the capture fails.
+  Future<void> startVideoRecordingAndStreaming(String url,
+      {int bitrate = 1200 * 1024}) async {
+    if (!value.isInitialized || _isDisposed) {
+      throw CameraException(
+        'Uninitialized CameraController',
+        'startVideoStreaming was called on uninitialized CameraController',
+      );
+    }
+
+    if (value.isRecordingVideo) {
+      throw CameraException(
+        'A video recording is already started.',
+        'startVideoStreaming was called when a recording is already started.',
+      );
+    }
+    if (value.isStreamingVideoRtmp) {
+      throw CameraException(
+        'A video streaming is already started.',
+        'startVideoStreaming was called when a recording is already started.',
+      );
+    }
+    if (value.isStreamingImages) {
+      throw CameraException(
+        'A camera has started streaming images.',
+        'startVideoStreaming was called while a camera was streaming images.',
+      );
+    }
+
+    try {
+      CameraPlatform.instance.startVideoRecordingAndStreaming(url, _cameraId, bitrate: bitrate);
+      value =
+          value.copyWith(isStreamingVideoRtmp: true, isStreamingPaused: false);
+    } on PlatformException catch (e) {
+      throw CameraException(e.code, e.message?? 'Unknown exception');
+    }
+  }
+
+  /// Start a video streaming to the url in [url`].
+  ///
+  /// This uses rtmp to do the sending the remote side.
+  ///
+  /// Throws a [CameraException] if the capture fails.
+  Future<void> startVideoStreaming(String url,
+      {int bitrate = 1200 * 1024}) async {
+    if (!value.isInitialized || _isDisposed) {
+      throw CameraException(
+        'Uninitialized CameraController',
+        'startVideoStreaming was called on uninitialized CameraController',
+      );
+    }
+    if (value.isRecordingVideo) {
+      throw CameraException(
+        'A video recording is already started.',
+        'startVideoStreaming was called when a recording is already started.',
+      );
+    }
+    if (value.isStreamingVideoRtmp) {
+      throw CameraException(
+        'A video streaming is already started.',
+        'startVideoStreaming was called when a recording is already started.',
+      );
+    }
+    if (value.isStreamingImages) {
+      throw CameraException(
+        'A camera has started streaming images.',
+        'startVideoStreaming was called while a camera was streaming images.',
+      );
+    }
+
+    try {
+      CameraPlatform.instance.startVideoStreaming(url, _cameraId, bitrate: bitrate);
+      value =
+          value.copyWith(isStreamingVideoRtmp: true, isStreamingPaused: false);
+    } on PlatformException catch (e) {
+      throw CameraException(e.code, e.message?? 'Unknown exception');
+    }
+  }
+
+  /// Stop RTMP streaming.
+  Future<void> stopVideoStreaming() async {
+    if (!value.isInitialized || _isDisposed) {
+      throw CameraException(
+        'Uninitialized CameraController',
+        'stopVideoStreaming was called on uninitialized CameraController',
+      );
+    }
+    if (!value.isStreamingVideoRtmp) {
+      throw CameraException(
+        'No video is recording',
+        'stopVideoStreaming was called when no video is streaming.',
+      );
+    }
+    try {
+      value =
+          value.copyWith(isStreamingVideoRtmp: false);
+      CameraPlatform.instance.stopVideoStreaming(_cameraId);
+    } on PlatformException catch (e) {
+      throw CameraException(e.code, e.message?? 'Unknown exception');
+    }
+  }
+
+  /// Stop streaming & recording.
+  Future<void> stopEverything() async {
+    if (!value.isInitialized || _isDisposed) {
+      throw CameraException(
+        'Uninitialized CameraController',
+        'stopEverything was called on uninitialized CameraController',
+      );
+    }
+    try {
+      value = value.copyWith(isStreamingVideoRtmp: false);
+      if (value.isRecordingVideo || value.isStreamingVideoRtmp) {
+        value = value.copyWith(
+            isRecordingVideo: false, isStreamingVideoRtmp: false);
+        CameraPlatform.instance.stopRecordingAndStreaming(_cameraId);
+      }
+      if (value.isStreamingImages) {
+        value = value.copyWith(isStreamingImages: false);
+        CameraPlatform.instance.stopImageStream();
+      }
+    } on PlatformException catch (e) {
+      throw CameraException(e.code, e.message?? 'Unknown exception');
+    }
+  }
+
+  // /// Pause video recording.
+  // ///
+  // /// This feature is only available on iOS and Android sdk 24+.
+  // Future<void> pauseVideoStreaming() async {
+  //   if (!value.isInitialized || _isDisposed) {
+  //     throw CameraException(
+  //       'Uninitialized CameraController',
+  //       'pauseVideoStreaming was called on uninitialized CameraController',
+  //     );
+  //   }
+  //   if (!value.isStreamingVideoRtmp) {
+  //     throw CameraException(
+  //       'No video is recording',
+  //       'pauseVideoStreaming was called when no video is streaming.',
+  //     );
+  //   }
+  //   try {
+  //     value = value.copyWith(isStreamingPaused: true);
+  //     await _channel.invokeMethod<void>(
+  //       'pauseVideoStreaming',
+  //       <String, dynamic>{'textureId': _textureId},
+  //     );
+  //   } on PlatformException catch (e) {
+  //     throw CameraException(e.code, e.message?? 'Unknown exception');
+  //   }
+  // }
+  //
+  // /// Resume video streaming after pausing.
+  // ///
+  // /// This feature is only available on iOS and Android sdk 24+.
+  // Future<void> resumeVideoStreaming() async {
+  //   if (!value.isInitialized || _isDisposed) {
+  //     throw CameraException(
+  //       'Uninitialized CameraController',
+  //       'resumeVideoStreaming was called on uninitialized CameraController',
+  //     );
+  //   }
+  //   if (!value.isStreamingVideoRtmp) {
+  //     throw CameraException(
+  //       'No video is recording',
+  //       'resumeVideoStreaming was called when no video is streaming.',
+  //     );
+  //   }
+  //   try {
+  //     value = value.copyWith(isStreamingPaused: false);
+  //     await _channel.invokeMethod<void>(
+  //       'resumeVideoStreaming',
+  //       <String, dynamic>{'textureId': _textureId},
+  //     );
+  //   } on PlatformException catch (e) {
+  //     throw CameraException(e.code, e.message?? 'Unknown exception');
+  //   }
+  // }
 
   /// Returns a widget showing a live camera preview.
   Widget buildPreview() {

@@ -137,6 +137,43 @@ abstract class CameraPlatform extends PlatformInterface {
     throw UnimplementedError('startVideoRecording() is not implemented.');
   }
 
+  /// Start a video stream to the url in [url].
+  ///
+  /// This uses rtmp to do the sending the remote side.
+  ///
+  /// Throws a [CameraException] if the capture fails.
+  Future<void> startVideoRecordingAndStreaming(String url,
+      int cameraId,
+      {int bitrate = 1200 * 1024}) async {
+    throw UnimplementedError('startVideoRecordingAndStreaming() is not implemented.');
+  }
+
+  /// Start a video streaming to the url in [url`].
+  ///
+  /// This uses rtmp to do the sending the remote side.
+  ///
+  /// Throws a [CameraException] if the capture fails.
+  Future<void> startVideoStreaming(String url,
+      int cameraId,
+      {int bitrate = 1200 * 1024}) async {
+    throw UnimplementedError('startVideoStreaming() is not implemented.');
+  }
+
+  /// Stop RTMP streaming.
+  Future<void> stopVideoStreaming(int cameraId) async {
+    throw UnimplementedError('stopVideoStreaming() is not implemented.');
+  }
+
+  /// Stop streaming & recording.
+  Future<void> stopRecordingAndStreaming(int cameraId) async {
+    throw UnimplementedError('stopRecordingAndStreaming() is not implemented.');
+  }
+
+  /// Stop streaming images.
+  Future<void> stopImageStream() async {
+    throw UnimplementedError('stopImageStream() is not implemented.');
+  }
+
   /// Starts a video recording and/or streaming session.
   ///
   /// Please see [VideoCaptureOptions] for documentation on the

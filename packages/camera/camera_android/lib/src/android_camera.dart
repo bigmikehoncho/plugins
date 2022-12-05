@@ -258,6 +258,51 @@ class AndroidCamera extends CameraPlatform {
   }
 
   @override
+  Future<void> startVideoRecordingAndStreaming(String url,
+      int cameraId,
+      {int bitrate = 1200 * 1024}) async {
+    await _channel.invokeMethod<void>(
+        'startVideoRecordingAndStreaming', <String, dynamic>{
+      'textureId': cameraId,
+      'url': url,
+      'bitrate': bitrate,
+    });
+  }
+
+  @override
+  Future<void> startVideoStreaming(String url,
+      int cameraId,
+      {int bitrate = 1200 * 1024}) async {
+    await _channel
+        .invokeMethod<void>('startVideoStreaming', <String, dynamic>{
+      'textureId': cameraId,
+      'url': url,
+      'bitrate': bitrate,
+    });
+  }
+
+  @override
+  Future<void> stopVideoStreaming(int cameraId) async {
+    await _channel.invokeMethod<void>(
+      'stopStreaming',
+      <String, dynamic>{'textureId': cameraId},
+    );
+  }
+
+  @override
+  Future<void> stopRecordingAndStreaming(int cameraId) async {
+    await _channel.invokeMethod<void>(
+      'stopRecordingAndStreaming',
+      <String, dynamic>{'textureId': cameraId},
+    );
+  }
+
+  @override
+  Future<void> stopImageStream() async {
+    await _channel.invokeMethod<void>('stopImageStream');
+  }
+
+  @override
   Future<XFile> stopVideoRecording(int cameraId) async {
     final String? path = await _channel.invokeMethod<String>(
       'stopVideoRecording',

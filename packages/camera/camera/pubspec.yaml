@@ -30,6 +30,10 @@ dependencies:
   flutter_plugin_android_lifecycle: ^2.0.2
   quiver: ^3.0.0
 
+dependency_overrides:
+  camera_platform_interface:
+    path: ../camera_platform_interface
+
 dev_dependencies:
   flutter_driver:
     sdk: flutter
