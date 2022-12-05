@@ -1,5 +1,5 @@
 name: camera_rtmp_example
-description: Demonstrates how to use the camera plugin.
+description: Demonstrates how to use the camera plugin with RTMP streaming.
 publish_to: none
 
 environment:
@@ -16,8 +16,10 @@ dependencies:
     path: ../
   flutter:
     sdk: flutter
-  path_provider: ^2.0.0
-  video_player: ^2.1.4
+  path_provider: ^2.0.11
+  cupertino_icons: ^1.0.5
+  video_player: ^2.4.5
+  wakelock: ^0.6.2
 
 dependency_overrides:
   camera_platform_interface:
