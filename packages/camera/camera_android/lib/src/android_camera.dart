@@ -70,6 +70,7 @@ class AndroidCamera extends CameraPlatform {
 
   @override
   Future<List<CameraDescription>> availableCameras() async {
+    print('MIKE TESTING');
     try {
       final List<Map<dynamic, dynamic>>? cameras = await _channel
           .invokeListMethod<Map<dynamic, dynamic>>('availableCameras');

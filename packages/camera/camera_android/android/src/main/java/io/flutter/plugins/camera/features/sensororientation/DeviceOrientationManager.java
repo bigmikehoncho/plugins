@@ -320,12 +320,12 @@ public class DeviceOrientationManager {
   }
 
   /**
-   * Gets an instance of the Android {@link android.view.Display}.
+   * Gets an instance of the Android {@link Display}.
    *
    * <p>This method is visible for testing purposes only and should never be used outside this
    * class.
    *
-   * @return An instance of the Android {@link android.view.Display}.
+   * @return An instance of the Android {@link Display}.
    */
   @SuppressWarnings("deprecation")
   @VisibleForTesting

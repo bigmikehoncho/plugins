@@ -61,8 +61,8 @@ final class CameraPermissions {
       ActivityCompat.requestPermissions(
           activity,
           enableAudio
-              ? new String[] {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO}
-              : new String[] {Manifest.permission.CAMERA},
+              ? new String[] {permission.CAMERA, permission.RECORD_AUDIO}
+              : new String[] {permission.CAMERA},
           CAMERA_REQUEST_ID);
     } else {
       // Permissions already exist. Call the callback with success.

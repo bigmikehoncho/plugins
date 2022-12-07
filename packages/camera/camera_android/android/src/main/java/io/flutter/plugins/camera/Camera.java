@@ -131,6 +131,8 @@ class Camera
 
   /** An additional thread for running tasks that shouldn't block the UI. */
   private HandlerThread backgroundHandlerThread;
+  /** True when backgroundHandlerThread is in the process of being stopped. */
+  private boolean stoppingBackgroundHandlerThread = false;
 
   private CameraDeviceWrapper cameraDevice;
   private CameraCaptureSession captureSession;
@@ -258,7 +260,7 @@ class Camera
 
     MediaRecorderBuilder mediaRecorderBuilder;
 
-    if (Build.VERSION.SDK_INT >= 31) {
+    if (VERSION.SDK_INT >= 31) {
       mediaRecorderBuilder = new MediaRecorderBuilder(getRecordingProfile(), outputFilePath);
     } else {
       mediaRecorderBuilder = new MediaRecorderBuilder(getRecordingProfileLegacy(), outputFilePath);
@@ -669,11 +671,21 @@ class Camera
 
   /** Stops the background thread and its {@link Handler}. */
   public void stopBackgroundThread() {
+    if (stoppingBackgroundHandlerThread) {
+      return;
+    }
     if (backgroundHandlerThread != null) {
+      stoppingBackgroundHandlerThread = true;
       backgroundHandlerThread.quitSafely();
+      try {
+        backgroundHandlerThread.join();
+      } catch (InterruptedException e) {
+        dartMessenger.error(flutterResult, "cameraAccess", e.getMessage(), null);
+      }
     }
     backgroundHandlerThread = null;
     backgroundHandler = null;
+    stoppingBackgroundHandlerThread = false;
   }
 
   /** Start capturing a picture, doing autofocus first. */
@@ -795,7 +807,7 @@ class Camera
     }
 
     try {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+      if (VERSION.SDK_INT >= VERSION_CODES.N) {
         mediaRecorder.pause();
       } else {
         result.error("videoRecordingFailed", "pauseVideoRecording requires Android API +24.", null);
@@ -816,7 +828,7 @@ class Camera
     }
 
     try {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+      if (VERSION.SDK_INT >= VERSION_CODES.N) {
         mediaRecorder.resume();
       } else {
         result.error(

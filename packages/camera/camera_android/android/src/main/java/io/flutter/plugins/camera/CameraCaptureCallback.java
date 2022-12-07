@@ -15,7 +15,7 @@ import io.flutter.plugins.camera.types.CameraCaptureProperties;
 import io.flutter.plugins.camera.types.CaptureTimeoutsWrapper;
 
 /**
- * A callback object for tracking the progress of a {@link android.hardware.camera2.CaptureRequest}
+ * A callback object for tracking the progress of a {@link CaptureRequest}
  * submitted to the camera device.
  */
 class CameraCaptureCallback extends CaptureCallback {
@@ -172,11 +172,11 @@ class CameraCaptureCallback extends CaptureCallback {
   /** An interface that describes the different state changes implementers can be informed about. */
   interface CameraCaptureStateListener {
 
-    /** Called when the {@link android.hardware.camera2.CaptureRequest} has been converged. */
+    /** Called when the {@link CaptureRequest} has been converged. */
     void onConverged();
 
     /**
-     * Called when the {@link android.hardware.camera2.CaptureRequest} enters the pre-capture state.
+     * Called when the {@link CaptureRequest} enters the pre-capture state.
      */
     void onPrecapture();
   }

@@ -19,7 +19,7 @@ public interface CameraProperties {
 
   /**
    * Returns the name (or identifier) of the camera device.
-   *
+   *open
    * @return String The name of the camera device.
    */
   String getCameraName();

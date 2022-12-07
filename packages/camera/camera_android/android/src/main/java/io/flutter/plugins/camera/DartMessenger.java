@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.flutter.embedding.engine.systemchannels.PlatformChannel;
 import io.flutter.plugin.common.BinaryMessenger;
+import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugins.camera.features.autofocus.FocusMode;
 import io.flutter.plugins.camera.features.exposurelock.ExposureMode;
@@ -21,6 +22,7 @@ public class DartMessenger {
   @NonNull private final Handler handler;
   @Nullable private MethodChannel cameraChannel;
   @Nullable private MethodChannel deviceChannel;
+  @Nullable private EventChannel.EventSink rtmpSink;
 
   /** Specifies the different device related message types. */
   enum DeviceEventType {
@@ -53,6 +55,14 @@ public class DartMessenger {
       this.method = method;
     }
   }
+  
+  /** Specifies the different RTMP related message types. */
+  enum RTMPEventType {
+    ERROR,
+    CAMERA_CLOSING,
+    RTMP_STOPPED,
+    RTMP_RETRY
+  }
 
   /**
    * Creates a new instance of the {@link DartMessenger} class.
@@ -63,10 +73,22 @@ public class DartMessenger {
    *     handler managing the main thread since communication with Flutter should always happen on
    *     the main thread. The handler is mainly supplied so it will be easier test this class.
    */
-  DartMessenger(BinaryMessenger messenger, long cameraId, @NonNull Handler handler) {
+  public DartMessenger(BinaryMessenger messenger, long cameraId, @NonNull Handler handler) {
     cameraChannel =
         new MethodChannel(messenger, "plugins.flutter.io/camera_android/camera" + cameraId);
     deviceChannel = new MethodChannel(messenger, "plugins.flutter.io/camera_android/fromPlatform");
+    new EventChannel(messenger, "plugins.flutter.io/rtmp_publisher/cameraEvents" + cameraId)
+            .setStreamHandler(new EventChannel.StreamHandler() {
+              @Override
+              public void onListen(Object arguments, EventChannel.EventSink events) {
+                rtmpSink = events;
+              }
+  
+              @Override
+              public void onCancel(Object arguments) {
+                rtmpSink = null;
+              }
+            });
     this.handler = handler;
   }
 
@@ -165,19 +187,32 @@ public class DartMessenger {
   private void send(DeviceEventType eventType) {
     send(eventType, new HashMap<>());
   }
-
+  
   private void send(DeviceEventType eventType, Map<String, Object> args) {
     if (deviceChannel == null) {
       return;
     }
-
+    
     handler.post(
-        new Runnable() {
-          @Override
-          public void run() {
-            deviceChannel.invokeMethod(eventType.method, args);
-          }
-        });
+            new Runnable() {
+              @Override
+              public void run() {
+                deviceChannel.invokeMethod(eventType.method, args);
+              }
+            });
+  }
+  
+  void send(RTMPEventType eventType, String description) {
+    if (rtmpSink == null) {
+      return;
+    }
+    HashMap<String, String> event = new HashMap<>();
+    event.put("eventType", eventType.toString().toLowerCase());
+    if (!TextUtils.isEmpty(description)) {
+      event.put("errorDescription", description);
+    }
+    
+    rtmpSink.success(event);
   }
 
   /**

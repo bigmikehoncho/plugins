@@ -6,6 +6,8 @@ package io.flutter.plugins.camera;
 
 import android.app.Activity;
 import android.os.Build;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -102,6 +104,7 @@ public final class CameraPlugin implements FlutterPlugin, ActivityAware {
       return;
     }
 
+    Log.d("MIKE", "maybeStartListening");
     methodCallHandler =
         new MethodCallHandlerImpl(
             activity, messenger, new CameraPermissions(), permissionsRegistry, textureRegistry);
