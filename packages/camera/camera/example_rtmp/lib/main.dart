@@ -45,7 +45,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   bool enableAudio = true;
   bool useOpenGL = true;
   TextEditingController _textFieldController =
-  TextEditingController(text: "rtmp://192.168.0.10/live");
+  TextEditingController(text: "rtmp://local_ip_address/live");
 
   bool get isStreaming => controller?.value.isStreamingVideoRtmp ?? false;
   bool isVisible = true;
