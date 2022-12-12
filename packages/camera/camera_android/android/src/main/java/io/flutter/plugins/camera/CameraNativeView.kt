@@ -242,7 +242,9 @@ class CameraNativeView(
                     captureFile = null
                 }
             }
-            result.success(null)
+            if (!rtmpCamera.isRecording) {
+                result.success(null)
+            }
         } catch (e: CameraAccessException) {
             result.error("stopVideoRecordingFailed", e.message, null)
         } catch (e: IllegalStateException) {

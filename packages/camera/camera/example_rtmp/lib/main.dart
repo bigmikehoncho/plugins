@@ -458,7 +458,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     }
 
     try {
-      // controller!.startImageStream((image) => debugPrint('MIKE: image stream: ${image.planes.first.bytes.lengthInBytes}'));
+      controller!.startImageStream((CameraImage image) => debugPrint('MIKE: image stream: ${image.planes.first.bytes.lengthInBytes}'));
       controller!.startVideoRecording();
     } on CameraException catch (e) {
       _showCameraException(e);
@@ -473,6 +473,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
     XFile file;
     try {
+      controller!.stopImageStream();
       file = await controller!.stopVideoRecording();
     } on CameraException catch (e) {
       _showCameraException(e);
