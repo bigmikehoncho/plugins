@@ -70,7 +70,6 @@ class AndroidCamera extends CameraPlatform {
 
   @override
   Future<List<CameraDescription>> availableCameras() async {
-    print('MIKE TESTING');
     try {
       final List<Map<dynamic, dynamic>>? cameras = await _channel
           .invokeListMethod<Map<dynamic, dynamic>>('availableCameras');
@@ -530,7 +529,11 @@ class AndroidCamera extends CameraPlatform {
 
   @override
   Widget buildPreview(int cameraId) {
-    return Texture(textureId: cameraId);
+    debugPrint('MIKE TEST');
+    return const AndroidView(
+      viewType: 'hybrid-view-type',
+      creationParamsCodec: StandardMessageCodec(),
+    );
   }
 
   /// Returns the flash mode as a String.
