@@ -236,7 +236,11 @@ class CameraNativeView(
     fun stopVideoRecording(result: MethodChannel.Result) {
         try {
             rtmpCamera.apply {
-                if (isRecording) stopRecord()
+                if (isRecording) {
+                    stopRecord()
+                    result.success(captureFile!!.absolutePath)
+                    captureFile = null
+                }
             }
             result.success(null)
         } catch (e: CameraAccessException) {
