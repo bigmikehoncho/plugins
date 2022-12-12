@@ -457,7 +457,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     }
 
     try {
-      controller!.startImageStream((image) => debugPrint('MIKE: image stream: ${image.planes.first.bytes.lengthInBytes}'));
+      // controller!.startImageStream((image) => debugPrint('MIKE: image stream: ${image.planes.first.bytes.lengthInBytes}'));
       controller!.startVideoRecording();
     } on CameraException catch (e) {
       _showCameraException(e);

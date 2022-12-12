@@ -3,6 +3,8 @@ version '1.0-SNAPSHOT'
 def args = ["-Xlint:deprecation","-Xlint:unchecked"]
 
 buildscript {
+    ext.kotlin_version = '1.7.10'
+
     repositories {
         google()
         mavenCentral()
@@ -10,6 +12,7 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:7.0.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
@@ -17,6 +20,7 @@ rootProject.allprojects {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://jitpack.io' }
     }
 }
 
@@ -25,6 +29,7 @@ project.getTasks().withType(JavaCompile){
 }
 
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 31
@@ -66,4 +71,8 @@ dependencies {
     testImplementation 'org.mockito:mockito-inline:4.7.0'
     testImplementation 'androidx.test:core:1.4.0'
     testImplementation 'org.robolectric:robolectric:4.5'
+
+    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'com.github.pedroSG94.rtmp-rtsp-stream-client-java:rtplibrary:2.2.1'
 }

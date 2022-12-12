@@ -14,7 +14,9 @@ import android.hardware.camera2.CameraAccessException
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.OrientationEventListener
 import io.flutter.plugin.common.MethodCall
+import io.flutter.plugin.platform.PlatformViewRegistry
 import io.flutter.plugins.camera.features.CameraFeatureFactoryImpl
 import io.flutter.plugins.camera.features.CameraFeatures
 import io.flutter.plugins.camera.features.autofocus.FocusMode
@@ -29,18 +31,24 @@ internal class MethodCallHandlerImpl(
         private val messenger: BinaryMessenger,
         private val cameraPermissions: CameraPermissions,
         private val permissionsRegistry: PermissionsRegistry,
-        private val textureRegistry: TextureRegistry) : MethodCallHandler {
+        private val textureRegistry: TextureRegistry,
+        platformViewRegistry: PlatformViewRegistry) : MethodCallHandler {
 
     private val methodChannel: MethodChannel = MethodChannel(messenger, "plugins.flutter.io/camera_android")
     private val imageStreamChannel: EventChannel = EventChannel(messenger, "plugins.flutter.io/camera_android/imageStream")
 
     private var nativeViewFactory = NativeViewFactory(activity)
+    private var currentOrientation = OrientationEventListener.ORIENTATION_UNKNOWN
+
+    init {
+        platformViewRegistry
+                .registerViewFactory("hybrid-view-type", nativeViewFactory) // fixme
+    }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         Log.d("MethodCallHandlerImpl", call.method)
         when (call.method) {
             "availableCameras" -> try {
-                Log.i("MIKE", "TESTING")
                 result.success(CameraUtilsRTMP.getAvailableCameras(activity))
             } catch (e: Exception) {
                 handleException(e, result)
@@ -380,7 +388,7 @@ internal class MethodCallHandlerImpl(
             reply["cameraId"] = textureId
             reply["previewWidth"] = previewSize.width
             reply["previewHeight"] = previewSize.height
-//            reply["previewQuarterTurns"] = currentOrientation / 90
+            reply["previewQuarterTurns"] = currentOrientation / 90
 //            Log.i("TAG", "open: width: " + reply["previewWidth"] + " height: " + reply["previewHeight"] + " currentOrientation: " + currentOrientation + " quarterTurns: " + reply["previewQuarterTurns"])
             // TODO Refactor cameraView initialisation
             nativeViewFactory.cameraName = cameraName
