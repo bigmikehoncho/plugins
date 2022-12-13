@@ -87,6 +87,7 @@ internal class MethodCallHandlerImpl(
 //                            null)
 //                }
 
+                nativeViewFactory.imageFormatGroup = call.argument("imageFormatGroup")
                 nativeViewFactory.cameraFeatures?.apply {
                     nativeViewFactory.dartMessenger?.sendCameraInitializedEvent(
                             resolution.previewSize.width,

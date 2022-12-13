@@ -16,9 +16,17 @@ internal class NativeViewFactory(private val activity: Activity) : PlatformViewF
     var enableAudio: Boolean = false
     var dartMessenger: DartMessenger? = null
     var cameraFeatures: CameraFeatures? = null
+    var imageFormatGroup: String? = null
 
     override fun create(context: Context, id: Int, args: Any?): PlatformView {
-        cameraNativeView = CameraNativeView(context, activity, enableAudio, preset, cameraName, dartMessenger)
+        cameraNativeView = CameraNativeView(context = context,
+                activity = activity,
+                enableAudio = enableAudio,
+                preset = preset,
+                cameraName = cameraName,
+                dartMessenger = dartMessenger,
+                imageFormatGroup = imageFormatGroup,
+                cameraFeatures = cameraFeatures!!)
         return cameraNativeView!!
     }
 }

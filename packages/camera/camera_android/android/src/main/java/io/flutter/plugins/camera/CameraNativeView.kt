@@ -34,7 +34,9 @@ class CameraNativeView(
         private var enableAudio: Boolean = false,
         private val preset: ResolutionPreset,
         private var cameraName: String,
-        private var dartMessenger: DartMessenger? = null) :
+        private var dartMessenger: DartMessenger? = null,
+        private var imageFormatGroup: String? = null,
+        private var cameraFeatures: CameraFeatures) :
         PlatformView,
         SurfaceHolder.Callback,
         ConnectCheckerRtmp {
@@ -46,7 +48,11 @@ class CameraNativeView(
     private var isSurfaceCreated = false
     private var fps = 0
 
-    private val cameraFeatures = CameraFeatures()
+    // Current supported outputs.
+    private val supportedImageFormats = mapOf(
+            "yuv420" to ImageFormat.YUV_420_888,
+            "jpeg" to ImageFormat.JPEG
+    )
 
     init {
         glView.isKeepAspectRatio = true
@@ -134,14 +140,12 @@ class CameraNativeView(
      * @param orientation new orientation.
      */
     fun lockCaptureOrientation(orientation: DeviceOrientation?) {
-        TODO("unimplemented")
-//        cameraFeatures.getSensorOrientation().lockCaptureOrientation(orientation)
+        cameraFeatures.sensorOrientation.lockCaptureOrientation(orientation)
     }
 
     /** Unlock capture orientation from dart.  */
     fun unlockCaptureOrientation() {
-        TODO("unimplemented")
-//        cameraFeatures.getSensorOrientation().unlockCaptureOrientation()
+        cameraFeatures.sensorOrientation.unlockCaptureOrientation()
     }
 
     fun startVideoRecording(result: MethodChannel.Result) {
@@ -307,8 +311,16 @@ class CameraNativeView(
     }
 
     private fun setImageStreamImageAvailableListener(imageStreamSink: EventSink) {
+        // For image streaming, use the provided image format or fall back to YUV420.
+
+        // For image streaming, use the provided image format or fall back to YUV420.
+        var imageFormat = supportedImageFormats[imageFormatGroup]
+        if (imageFormat == null) {
+            Log.w("CameraNativeView", "The selected imageFormatGroup is not supported by Android. Defaulting to yuv420")
+            imageFormat = ImageFormat.YUV_420_888
+        }
         rtmpCamera.addImageListener(
-                ImageFormat.YUV_420_888,
+                imageFormat,
                 2 // This is needed because the underlying API is using acquireLatestImage()
         ) { image ->
             val planes: MutableList<Map<String, Any>> = ArrayList()
