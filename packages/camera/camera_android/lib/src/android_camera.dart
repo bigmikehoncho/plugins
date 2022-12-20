@@ -529,7 +529,6 @@ class AndroidCamera extends CameraPlatform {
 
   @override
   Widget buildPreview(int cameraId) {
-    debugPrint('MIKE TEST');
     return const AndroidView(
       viewType: 'hybrid-view-type',
       creationParamsCodec: StandardMessageCodec(),

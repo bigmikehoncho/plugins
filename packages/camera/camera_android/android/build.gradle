@@ -75,4 +75,6 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.4.2'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.github.pedroSG94.rtmp-rtsp-stream-client-java:rtplibrary:2.2.1'
+    // For some reason, needs to be added when working directly in the Android codebase
+//    implementation files('/Users/mike/flutter/bin/cache/artifacts/engine/android-x64/flutter.jar')
 }

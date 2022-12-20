@@ -98,7 +98,7 @@ internal class MethodCallHandlerImpl(
                             false
                     )
                 }
-                getCameraView()?.startPreview(nativeViewFactory.cameraName)
+//                getCameraView()?.startPreview(nativeViewFactory.cameraName)
                 result.success(null)
             }
             "takePicture" -> {

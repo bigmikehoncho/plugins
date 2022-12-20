@@ -22,28 +22,6 @@ class CameraPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // if (controller.value.isInitialized) {
-    //   Widget childView;
-    //   if (Platform.isAndroid) {
-    //     childView = const AndroidView(
-    //       viewType: 'hybrid-view-type',
-    //       creationParamsCodec: StandardMessageCodec(),
-    //     );
-    //   } else {
-    //     childView = Texture(textureId: controller.cameraId);
-    //   }
-    //
-    //   if (controller.value.previewSize!.width <
-    //       controller.value.previewSize!.height) {
-    //     return RotatedBox(
-    //         quarterTurns: _getQuarterTurns(),
-    //         child: childView);
-    //   } else {
-    //     return childView;
-    //   }
-    // } else {
-    //   return Container();
-    // }
     return controller.value.isInitialized
         ? ValueListenableBuilder<CameraValue>(
             valueListenable: controller,
