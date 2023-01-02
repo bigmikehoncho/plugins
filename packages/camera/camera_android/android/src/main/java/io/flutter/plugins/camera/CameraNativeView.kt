@@ -8,11 +8,13 @@ import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CameraMetadata
+import android.os.Build.VERSION
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.SurfaceHolder
 import android.view.View
+import com.pedro.encoder.input.video.CameraHelper
 import com.pedro.encoder.input.video.CameraHelper.Facing.BACK
 import com.pedro.encoder.input.video.CameraHelper.Facing.FRONT
 import com.pedro.rtmp.utils.ConnectCheckerRtmp
@@ -134,20 +136,6 @@ class CameraNativeView(
         }
     }
 
-    /**
-     * Lock capture orientation from dart.
-     *
-     * @param orientation new orientation.
-     */
-    fun lockCaptureOrientation(orientation: DeviceOrientation?) {
-        cameraFeatures.sensorOrientation.lockCaptureOrientation(orientation)
-    }
-
-    /** Unlock capture orientation from dart.  */
-    fun unlockCaptureOrientation() {
-        cameraFeatures.sensorOrientation.unlockCaptureOrientation()
-    }
-
     fun startVideoRecording(result: MethodChannel.Result) {
         val outputDir = activity!!.cacheDir
         try {
@@ -162,7 +150,20 @@ class CameraNativeView(
         Log.d("CameraNativeView", "startVideoRecording filePath: ${captureFile?.absolutePath} result: $result")
 
         if (!rtmpCamera.isStreaming) {
-            if (rtmpCamera.prepareAudio(64 * 1024, 32000, true, true, true) && rtmpCamera.prepareVideo()) {
+            val resolutionFeature = cameraFeatures.resolution
+            val videoBitRate = if (VERSION.SDK_INT >= 31) {
+                resolutionFeature.recordingProfile.videoProfiles[0].bitrate
+            } else {
+                resolutionFeature.recordingProfileLegacy.videoBitRate
+            }
+            Log.d("CameraNativeView", "orientation: ${cameraFeatures.sensorOrientation.lockedCaptureOrientation}, captureSize: ${resolutionFeature.captureSize}")
+            if (rtmpCamera.prepareAudio(64 * 1024, 32000, true, true, true) && rtmpCamera.prepareVideo(
+                            resolutionFeature.captureSize.width,
+                            resolutionFeature.captureSize.height,
+                            30,
+                            videoBitRate,
+                            getRotation(cameraFeatures.sensorOrientation.lockedCaptureOrientation)
+            )) {
                 rtmpCamera.startRecord(captureFile!!.absolutePath)
             } else {
                 result.error("videoRecordingFailed", "Error preparing stream, This device cant do it", null)
@@ -183,11 +184,18 @@ class CameraNativeView(
 
         try {
             if (!rtmpCamera.isStreaming) {
-                val streamingSize = CameraUtilsRTMP.getBestAvailableCamcorderProfileForResolutionPreset(cameraName, preset)
+                val resolutionFeature = cameraFeatures.resolution
+                val videoBitRate = if (VERSION.SDK_INT >= 31) {
+                    resolutionFeature.recordingProfile.videoProfiles[0].bitrate
+                } else {
+                    resolutionFeature.recordingProfileLegacy.videoBitRate
+                }
                 if (rtmpCamera.isRecording || rtmpCamera.prepareAudio() && rtmpCamera.prepareVideo(
-                                streamingSize.videoFrameWidth,
-                                streamingSize.videoFrameHeight,
-                                streamingSize.videoBitRate)) {
+                                resolutionFeature.captureSize.width,
+                                resolutionFeature.captureSize.height,
+                                30,
+                                videoBitRate,
+                                getRotation(cameraFeatures.sensorOrientation.lockedCaptureOrientation))) {
                     // ready to start streaming
                     rtmpCamera.startStream(url)
                 } else {
@@ -200,6 +208,16 @@ class CameraNativeView(
             result.error("videoStreamingFailed", e.message, null)
         } catch (e: IOException) {
             result.error("videoStreamingFailed", e.message, null)
+        }
+    }
+
+    private fun getRotation(orientation: DeviceOrientation?): Int {
+        return when (orientation) {
+            DeviceOrientation.PORTRAIT_UP -> 0
+            DeviceOrientation.PORTRAIT_DOWN -> 180
+            DeviceOrientation.LANDSCAPE_LEFT -> 90
+            DeviceOrientation.LANDSCAPE_RIGHT -> 270
+            else -> CameraHelper.getCameraOrientation(context)
         }
     }
 
@@ -355,14 +373,19 @@ class CameraNativeView(
         cameraName = targetCamera
         val previewSize = CameraUtilsRTMP.computeBestPreviewSize(cameraName, preset)
 
-        Log.d("CameraNativeView", "startPreview: $preset")
         if (isSurfaceCreated) {
             try {
                 if (rtmpCamera.isOnPreview) {
                     rtmpCamera.stopPreview()
                 }
 
-                rtmpCamera.startPreview(if (isFrontFacing(targetCamera)) FRONT else BACK, previewSize.width, previewSize.height)
+                val resolutionFeature = cameraFeatures.resolution
+                Log.d("CameraNativeView", "startPreview: $preset, previewSize: ${resolutionFeature.previewSize}")
+                rtmpCamera.startPreview(
+                        if (isFrontFacing(targetCamera)) FRONT else BACK,
+                        resolutionFeature.previewSize.width,
+                        resolutionFeature.previewSize.height,
+                        getRotation(cameraFeatures.sensorOrientation.lockedCaptureOrientation))
             } catch (e: CameraAccessException) {
 //                close()
                 activity?.runOnUiThread { dartMessenger?.send(DartMessenger.RTMPEventType.ERROR, "CameraAccessException") }

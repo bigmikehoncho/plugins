@@ -92,10 +92,10 @@ internal class MethodCallHandlerImpl(
                     nativeViewFactory.dartMessenger?.sendCameraInitializedEvent(
                             resolution.previewSize.width,
                             resolution.previewSize.height,
-                            ExposureMode.auto, // TODO add real values for these last 4 params
-                            FocusMode.auto,
-                            false,
-                            false
+                            exposureLock.value,
+                            autoFocus.value,
+                            exposurePoint.checkIsSupported(),
+                            focusPoint.checkIsSupported()
                     )
                 }
 //                getCameraView()?.startPreview(nativeViewFactory.cameraName)
@@ -308,7 +308,7 @@ internal class MethodCallHandlerImpl(
             "lockCaptureOrientation" -> {
                 val orientation = CameraUtils.deserializeDeviceOrientation(call.argument("orientation"))
                 try {
-                    getCameraView()!!.lockCaptureOrientation(orientation)
+                    nativeViewFactory.cameraFeatures!!.sensorOrientation.lockCaptureOrientation(orientation)
                     result.success(null)
                 } catch (e: Exception) {
                     handleException(e, result)
@@ -316,7 +316,7 @@ internal class MethodCallHandlerImpl(
             }
             "unlockCaptureOrientation" -> {
                 try {
-                    getCameraView()!!.unlockCaptureOrientation()
+                    nativeViewFactory.cameraFeatures!!.sensorOrientation.unlockCaptureOrientation()
                     result.success(null)
                 } catch (e: Exception) {
                     handleException(e, result)
@@ -379,16 +379,12 @@ internal class MethodCallHandlerImpl(
             val cameraName = call.argument<String>("cameraName") ?: "0"
             val resolutionPreset = call.argument<String>("resolutionPreset")
             val enableAudio = call.argument<Boolean>("enableAudio")!!
-        val flutterSurfaceTexture = textureRegistry.createSurfaceTexture()
-        val textureId = flutterSurfaceTexture.id()
+        val textureId = 0L
             val dartMessenger = DartMessenger(messenger, textureId, Handler(Looper.getMainLooper()))
 
             val preset = ResolutionPreset.valueOf(resolutionPreset!!)
-            val previewSize = CameraUtilsRTMP.computeBestPreviewSize(cameraName, preset)
             val reply: MutableMap<String, Any> = HashMap()
             reply["cameraId"] = textureId
-            reply["previewWidth"] = previewSize.width
-            reply["previewHeight"] = previewSize.height
             reply["previewQuarterTurns"] = currentOrientation / 90
 //            Log.i("TAG", "open: width: " + reply["previewWidth"] + " height: " + reply["previewHeight"] + " currentOrientation: " + currentOrientation + " quarterTurns: " + reply["previewQuarterTurns"])
             // TODO Refactor cameraView initialisation
