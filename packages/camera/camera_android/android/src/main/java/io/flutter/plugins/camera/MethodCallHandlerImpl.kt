@@ -4,27 +4,22 @@
 package io.flutter.plugins.camera
 
 import android.app.Activity
-import io.flutter.plugin.common.BinaryMessenger
-import io.flutter.plugins.camera.CameraPermissions.PermissionsRegistry
-import io.flutter.view.TextureRegistry
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.EventChannel
 import android.hardware.camera2.CameraAccessException
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.OrientationEventListener
+import io.flutter.plugin.common.BinaryMessenger
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
+import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.platform.PlatformViewRegistry
+import io.flutter.plugins.camera.CameraPermissions.PermissionsRegistry
 import io.flutter.plugins.camera.features.CameraFeatureFactoryImpl
 import io.flutter.plugins.camera.features.CameraFeatures
-import io.flutter.plugins.camera.features.autofocus.FocusMode
-import io.flutter.plugins.camera.features.exposurelock.ExposureMode
 import io.flutter.plugins.camera.features.resolution.ResolutionPreset
-import java.lang.Exception
-import java.lang.RuntimeException
-import java.util.HashMap
+import io.flutter.view.TextureRegistry
 
 internal class MethodCallHandlerImpl(
         private val activity: Activity,
@@ -274,36 +269,33 @@ internal class MethodCallHandlerImpl(
                 }
             }
             "getMaxZoomLevel" -> {
-//                assert(camera != null)
-//                try {
-//                    val maxZoomLevel = camera!!.maxZoomLevel
-//                    result.success(maxZoomLevel)
-//                } catch (e: Exception) {
-//                    handleException(e, result)
-//                }
+                try {
+                    val maxZoomLevel = getCameraView()!!.getMaxZoomLevel()
+                    result.success(maxZoomLevel)
+                } catch (e: Exception) {
+                    handleException(e, result)
+                }
             }
             "getMinZoomLevel" -> {
-//                assert(camera != null)
-//                try {
-//                    val minZoomLevel = camera!!.minZoomLevel
-//                    result.success(minZoomLevel)
-//                } catch (e: Exception) {
-//                    handleException(e, result)
-//                }
+                try {
+                    val minZoomLevel = getCameraView()!!.getMinZoomLevel()
+                    result.success(minZoomLevel)
+                } catch (e: Exception) {
+                    handleException(e, result)
+                }
             }
             "setZoomLevel" -> {
-//                assert(camera != null)
-//                val zoom = call.argument<Double>("zoom")
-//                if (zoom == null) {
-//                    result.error(
-//                            "ZOOM_ERROR", "setZoomLevel is called without specifying a zoom level.", null)
-//                    return
-//                }
-//                try {
-//                    camera!!.setZoomLevel(result, zoom.toFloat())
-//                } catch (e: Exception) {
-//                    handleException(e, result)
-//                }
+                val zoom = call.argument<Double>("zoom")
+                if (zoom == null) {
+                    result.error(
+                            "ZOOM_ERROR", "setZoomLevel is called without specifying a zoom level.", null)
+                    return
+                }
+                try {
+                    getCameraView()!!.setZoomLevel(result, zoom.toFloat())
+                } catch (e: Exception) {
+                    handleException(e, result)
+                }
             }
             "lockCaptureOrientation" -> {
                 val orientation = CameraUtils.deserializeDeviceOrientation(call.argument("orientation"))
@@ -376,22 +368,22 @@ internal class MethodCallHandlerImpl(
 
     @Throws(CameraAccessException::class)
     private fun instantiateCamera(call: MethodCall, result: MethodChannel.Result) {
-            val cameraName = call.argument<String>("cameraName") ?: "0"
-            val resolutionPreset = call.argument<String>("resolutionPreset")
-            val enableAudio = call.argument<Boolean>("enableAudio")!!
+        val cameraName = call.argument<String>("cameraName") ?: "0"
+        val resolutionPreset = call.argument<String>("resolutionPreset")
+        val enableAudio = call.argument<Boolean>("enableAudio")!!
         val textureId = 0L
-            val dartMessenger = DartMessenger(messenger, textureId, Handler(Looper.getMainLooper()))
+        val dartMessenger = DartMessenger(messenger, textureId, Handler(Looper.getMainLooper()))
 
-            val preset = ResolutionPreset.valueOf(resolutionPreset!!)
-            val reply: MutableMap<String, Any> = HashMap()
-            reply["cameraId"] = textureId
-            reply["previewQuarterTurns"] = currentOrientation / 90
+        val preset = ResolutionPreset.valueOf(resolutionPreset!!)
+        val reply: MutableMap<String, Any> = HashMap()
+        reply["cameraId"] = textureId
+        reply["previewQuarterTurns"] = currentOrientation / 90
 //            Log.i("TAG", "open: width: " + reply["previewWidth"] + " height: " + reply["previewHeight"] + " currentOrientation: " + currentOrientation + " quarterTurns: " + reply["previewQuarterTurns"])
-            // TODO Refactor cameraView initialisation
-            nativeViewFactory.cameraName = cameraName
-            nativeViewFactory.preset = preset
-            nativeViewFactory.enableAudio = enableAudio
-            nativeViewFactory.dartMessenger = dartMessenger
+        // TODO Refactor cameraView initialisation
+        nativeViewFactory.cameraName = cameraName
+        nativeViewFactory.preset = preset
+        nativeViewFactory.enableAudio = enableAudio
+        nativeViewFactory.dartMessenger = dartMessenger
         nativeViewFactory.cameraFeatures = CameraFeatures.init(
                 CameraFeatureFactoryImpl(),
                 CameraPropertiesImpl(cameraName, CameraUtils.getCameraManager(activity)),
@@ -399,7 +391,7 @@ internal class MethodCallHandlerImpl(
                 dartMessenger,
                 preset
         )
-            result.success(reply)
+        result.success(reply)
     }
 
     // We move catching CameraAccessException out of onMethodCall because it causes a crash

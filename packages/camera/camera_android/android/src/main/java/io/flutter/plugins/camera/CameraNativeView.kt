@@ -117,6 +117,20 @@ class CameraNativeView(
         Log.d("CameraNativeView", "close")
     }
 
+    fun getMaxZoomLevel(): Float {
+        return rtmpCamera.zoomRange.upper
+    }
+
+    fun getMinZoomLevel(): Float {
+        return rtmpCamera.zoomRange.lower
+    }
+
+    fun setZoomLevel(result: MethodChannel.Result, zoom: Float) {
+        rtmpCamera.zoom = zoom
+
+        result.success(null)
+    }
+
     fun takePicture(filePath: String, result: MethodChannel.Result) {
         Log.d("CameraNativeView", "takePicture filePath: $filePath result: $result")
         val file = File(filePath)
@@ -157,13 +171,18 @@ class CameraNativeView(
                 resolutionFeature.recordingProfileLegacy.videoBitRate
             }
             Log.d("CameraNativeView", "orientation: ${cameraFeatures.sensorOrientation.lockedCaptureOrientation}, captureSize: ${resolutionFeature.captureSize}")
-            if (rtmpCamera.prepareAudio(64 * 1024, 32000, true, true, true) && rtmpCamera.prepareVideo(
+            if (rtmpCamera.prepareAudio(64 * 1024,
+                            32000,
+                            true,
+                            true,
+                            true) &&
+                    rtmpCamera.prepareVideo(
                             resolutionFeature.captureSize.width,
                             resolutionFeature.captureSize.height,
                             30,
                             videoBitRate,
                             getRotation(cameraFeatures.sensorOrientation.lockedCaptureOrientation)
-            )) {
+                    )) {
                 rtmpCamera.startRecord(captureFile!!.absolutePath)
             } else {
                 result.error("videoRecordingFailed", "Error preparing stream, This device cant do it", null)
@@ -215,8 +234,8 @@ class CameraNativeView(
         return when (orientation) {
             DeviceOrientation.PORTRAIT_UP -> 0
             DeviceOrientation.PORTRAIT_DOWN -> 180
-            DeviceOrientation.LANDSCAPE_LEFT -> 90
-            DeviceOrientation.LANDSCAPE_RIGHT -> 270
+            DeviceOrientation.LANDSCAPE_LEFT -> 270
+            DeviceOrientation.LANDSCAPE_RIGHT -> 90
             else -> CameraHelper.getCameraOrientation(context)
         }
     }
@@ -371,7 +390,6 @@ class CameraNativeView(
             cameraNameArg
         }
         cameraName = targetCamera
-        val previewSize = CameraUtilsRTMP.computeBestPreviewSize(cameraName, preset)
 
         if (isSurfaceCreated) {
             try {
@@ -380,7 +398,7 @@ class CameraNativeView(
                 }
 
                 val resolutionFeature = cameraFeatures.resolution
-                Log.d("CameraNativeView", "startPreview: $preset, previewSize: ${resolutionFeature.previewSize}")
+                Log.d("CameraNativeView", "startPreview: $preset, previewSize: ${resolutionFeature.previewSize}, orientation: ${cameraFeatures.sensorOrientation.lockedCaptureOrientation}")
                 rtmpCamera.startPreview(
                         if (isFrontFacing(targetCamera)) FRONT else BACK,
                         resolutionFeature.previewSize.width,
