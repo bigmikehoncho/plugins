@@ -150,7 +150,9 @@ class CameraNativeView(
         }
     }
 
-    fun startVideoRecording(result: MethodChannel.Result) {
+    fun startVideoRecording(result: MethodChannel.Result, imageStreamChannel: EventChannel?) {
+        imageStreamChannel?.let { setStreamHandler(it) }
+
         val outputDir = activity!!.cacheDir
         try {
             captureFile = File.createTempFile("REC", ".mp4", outputDir)
@@ -240,9 +242,9 @@ class CameraNativeView(
         }
     }
 
-    fun startVideoRecordingAndStreaming(url: String?, result: MethodChannel.Result) {
+    fun startVideoRecordingAndStreaming(url: String?, result: MethodChannel.Result, imageStreamChannel: EventChannel?) {
         Log.d("CameraNativeView", "startVideoStreaming url: $url")
-        startVideoRecording(result)
+        startVideoRecording(result, imageStreamChannel)
         startVideoStreaming(url, result)
     }
 
@@ -335,6 +337,10 @@ class CameraNativeView(
     }
 
     fun startPreviewWithImageStream(imageStreamChannel: EventChannel) {
+        setStreamHandler(imageStreamChannel)
+    }
+
+    private fun setStreamHandler(imageStreamChannel: EventChannel) {
         imageStreamChannel.setStreamHandler(
                 object : EventChannel.StreamHandler {
                     override fun onListen(o: Any?, imageStreamSink: EventSink) {

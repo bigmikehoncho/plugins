@@ -106,7 +106,9 @@ internal class MethodCallHandlerImpl(
                 result.success(null)
             }
             "startVideoRecording" -> {
-                getCameraView()!!.startVideoRecording(result)
+                getCameraView()!!.startVideoRecording(
+                        result,
+                        if (call.argument<Boolean>("enableStream") == true) imageStreamChannel else null)
             }
             "stopVideoRecording" -> {
                 getCameraView()!!.stopVideoRecording(result)
@@ -127,7 +129,8 @@ internal class MethodCallHandlerImpl(
                 Log.i("Stuff", "startVideoRecordingAndStreaming ${call.arguments}")
                 getCameraView()?.startVideoRecordingAndStreaming(
                         call.argument("url"),
-                        result)
+                        result,
+                        if (call.argument<Boolean>("enableStream") == true) imageStreamChannel else null)
             }
             "pauseVideoStreaming" -> {
                 Log.i("Stuff", "pauseVideoStreaming")
