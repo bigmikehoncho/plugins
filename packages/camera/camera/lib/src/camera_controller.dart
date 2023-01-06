@@ -43,7 +43,7 @@ class CameraValue {
     required this.isTakingPicture,
     required this.isStreamingImages,
     required bool isRecordingPaused,
-    required bool isStreamingPaused,
+    required bool isStreamingRtmpPaused,
     required this.flashMode,
     required this.exposureMode,
     required this.focusMode,
@@ -55,7 +55,7 @@ class CameraValue {
     this.isPreviewPaused = false,
     this.previewPauseOrientation,
   }) : _isRecordingPaused = isRecordingPaused,
-        _isStreamingPaused = isStreamingPaused;
+        _isStreamingRtmpPaused = isStreamingRtmpPaused;
 
   /// Creates a new camera controller state for an uninitialized controller.
   const CameraValue.uninitialized()
@@ -66,7 +66,7 @@ class CameraValue {
           isTakingPicture: false,
           isStreamingImages: false,
           isRecordingPaused: false,
-    isStreamingPaused: false,
+    isStreamingRtmpPaused: false,
           flashMode: FlashMode.auto,
           exposureMode: ExposureMode.auto,
           exposurePointSupported: false,
@@ -93,7 +93,7 @@ class CameraValue {
 
   final bool _isRecordingPaused;
 
-  final bool _isStreamingPaused;
+  final bool _isStreamingRtmpPaused;
 
   /// True when the preview widget has been paused manually.
   final bool isPreviewPaused;
@@ -104,8 +104,8 @@ class CameraValue {
   /// True when camera [isRecordingVideo] and recording is paused.
   bool get isRecordingPaused => isRecordingVideo && _isRecordingPaused;
 
-  /// True when camera [isRecordingVideo] and recording is paused.
-  bool get isStreamingPaused => isStreamingVideoRtmp && _isStreamingPaused;
+  /// True when camera [isStreamingVideoRtmp] and streaming Rtmp is paused.
+  bool get isStreamingPaused => isStreamingVideoRtmp && _isStreamingRtmpPaused;
 
   /// Description of an error state.
   ///
@@ -168,7 +168,7 @@ class CameraValue {
     String? errorDescription,
     Size? previewSize,
     bool? isRecordingPaused,
-    bool? isStreamingPaused,
+    bool? isStreamingRtmpPaused,
     FlashMode? flashMode,
     ExposureMode? exposureMode,
     FocusMode? focusMode,
@@ -189,7 +189,7 @@ class CameraValue {
       isTakingPicture: isTakingPicture ?? this.isTakingPicture,
       isStreamingImages: isStreamingImages ?? this.isStreamingImages,
       isRecordingPaused: isRecordingPaused ?? _isRecordingPaused,
-      isStreamingPaused: isStreamingPaused ?? _isStreamingPaused,
+      isStreamingRtmpPaused: isStreamingRtmpPaused ?? _isStreamingRtmpPaused,
       flashMode: flashMode ?? this.flashMode,
       exposureMode: exposureMode ?? this.exposureMode,
       focusMode: focusMode ?? this.focusMode,
@@ -605,7 +605,7 @@ class CameraController extends ValueNotifier<CameraValue> {
     try {
       CameraPlatform.instance.startVideoRecordingAndStreaming(url, _cameraId, bitrate: bitrate);
       value =
-          value.copyWith(isStreamingVideoRtmp: true, isStreamingPaused: false);
+          value.copyWith(isStreamingVideoRtmp: true, isStreamingRtmpPaused: false);
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message?? 'Unknown exception');
     }
@@ -646,7 +646,7 @@ class CameraController extends ValueNotifier<CameraValue> {
     try {
       CameraPlatform.instance.startVideoStreaming(url, _cameraId, bitrate: bitrate);
       value =
-          value.copyWith(isStreamingVideoRtmp: true, isStreamingPaused: false);
+          value.copyWith(isStreamingVideoRtmp: true, isStreamingRtmpPaused: false);
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message?? 'Unknown exception');
     }
