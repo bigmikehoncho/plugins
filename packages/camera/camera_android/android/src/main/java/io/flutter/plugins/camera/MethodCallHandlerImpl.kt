@@ -26,8 +26,11 @@ internal class MethodCallHandlerImpl(
         private val messenger: BinaryMessenger,
         private val cameraPermissions: CameraPermissions,
         private val permissionsRegistry: PermissionsRegistry,
-        private val textureRegistry: TextureRegistry,
         platformViewRegistry: PlatformViewRegistry) : MethodCallHandler {
+    
+    companion object {
+        private const val TAG = "MethodCallHandlerImpl"
+    }
 
     private val methodChannel: MethodChannel = MethodChannel(messenger, "plugins.flutter.io/camera_android")
     private val imageStreamChannel: EventChannel = EventChannel(messenger, "plugins.flutter.io/camera_android/imageStream")
@@ -120,40 +123,40 @@ internal class MethodCallHandlerImpl(
                 getCameraView()!!.resumeVideoRecording(result)
             }
             "startVideoStreaming" -> {
-                Log.i("Stuff", "startVideoStreaming ${call.arguments}")
+                Log.i(TAG, "startVideoStreaming ${call.arguments}")
                 getCameraView()?.startVideoStreaming(
                         call.argument("url"),
                         result)
             }
             "startVideoRecordingAndStreaming" -> {
-                Log.i("Stuff", "startVideoRecordingAndStreaming ${call.arguments}")
+                Log.i(TAG, "startVideoRecordingAndStreaming ${call.arguments}")
                 getCameraView()?.startVideoRecordingAndStreaming(
                         call.argument("url"),
                         result,
                         if (call.argument<Boolean>("enableStream") == true) imageStreamChannel else null)
             }
             "pauseVideoStreaming" -> {
-                Log.i("Stuff", "pauseVideoStreaming")
+                Log.i(TAG, "pauseVideoStreaming")
                 getCameraView()?.pauseVideoStreaming(result)
             }
             "resumeVideoStreaming" -> {
-                Log.i("Stuff", "resumeVideoStreaming")
+                Log.i(TAG, "resumeVideoStreaming")
                 getCameraView()?.resumeVideoStreaming(result)
             }
             "stopRecordingOrStreaming" -> {
-                Log.i("Stuff", "stopRecordingOrStreaming")
+                Log.i(TAG, "stopRecordingOrStreaming")
                 getCameraView()?.stopVideoRecordingOrStreaming(result)
             }
             "stopRecording" -> {
-                Log.i("Stuff", "stopRecording")
+                Log.i(TAG, "stopRecording")
                 getCameraView()?.stopVideoRecording(result)
             }
             "stopStreaming" -> {
-                Log.i("Stuff", "stopStreaming")
+                Log.i(TAG, "stopStreaming")
                 getCameraView()?.stopVideoStreaming(result)
             }
             "getStreamStatistics" -> {
-                Log.i("Stuff", "getStreamStatistics")
+                Log.i(TAG, "getStreamStatistics")
                 try {
                     getCameraView()?.getStreamStatistics(result)
                 } catch (e: Exception) {
@@ -345,29 +348,6 @@ internal class MethodCallHandlerImpl(
     fun stopListening() {
         methodChannel.setMethodCallHandler(null)
     }
-
-//    @Throws(CameraAccessException::class)
-//    private fun instantiateCamera(call: MethodCall, result: MethodChannel.Result) {
-//        val cameraName = call.argument<String>("cameraName")
-//        val preset = call.argument<String>("resolutionPreset")
-//        val enableAudio = call.argument<Boolean>("enableAudio")!!
-//        val flutterSurfaceTexture = textureRegistry.createSurfaceTexture()
-//        val dartMessenger = DartMessenger(
-//                messenger, flutterSurfaceTexture.id(), Handler(Looper.getMainLooper()))
-//        val cameraProperties: CameraProperties = CameraPropertiesImpl(cameraName, CameraUtils.getCameraManager(activity))
-//        val resolutionPreset = ResolutionPreset.valueOf(preset!!)
-//        camera = Camera(
-//                activity,
-//                flutterSurfaceTexture,
-//                CameraFeatureFactoryImpl(),
-//                dartMessenger,
-//                cameraProperties,
-//                resolutionPreset,
-//                enableAudio)
-//        val reply: MutableMap<String, Any> = HashMap()
-//        reply["cameraId"] = flutterSurfaceTexture.id()
-//        result.success(reply)
-//    }
 
     @Throws(CameraAccessException::class)
     private fun instantiateCamera(call: MethodCall, result: MethodChannel.Result) {
