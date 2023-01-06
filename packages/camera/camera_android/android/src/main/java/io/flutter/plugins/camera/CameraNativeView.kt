@@ -57,7 +57,7 @@ class CameraNativeView(
     )
 
     init {
-        glView.isKeepAspectRatio = true
+        glView.isKeepAspectRatio = false
         glView.holder.addCallback(this)
         rtmpCamera = RtmpCamera2(glView, this)
         rtmpCamera.setReTries(10)
