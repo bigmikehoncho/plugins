@@ -605,7 +605,13 @@ class CameraController extends ValueNotifier<CameraValue> {
     try {
       CameraPlatform.instance.startVideoRecordingAndStreaming(url, _cameraId, bitrate: bitrate);
       value =
-          value.copyWith(isStreamingVideoRtmp: true, isStreamingRtmpPaused: false);
+          value.copyWith(
+              isStreamingVideoRtmp: true,
+              isStreamingRtmpPaused: false,
+              isRecordingVideo: true,
+              isRecordingPaused: false,
+              recordingOrientation:
+              value.lockedCaptureOrientation ?? value.deviceOrientation);
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message?? 'Unknown exception');
     }

@@ -172,6 +172,7 @@ class CameraNativeView(
             } else {
                 resolutionFeature.recordingProfileLegacy.videoBitRate
             }
+            val rotation = getRotation(cameraFeatures.sensorOrientation.lockedCaptureOrientation)
             Log.d("CameraNativeView", "orientation: ${cameraFeatures.sensorOrientation.lockedCaptureOrientation}, captureSize: ${resolutionFeature.captureSize}")
             if (rtmpCamera.prepareAudio(64 * 1024,
                             32000,
@@ -183,8 +184,9 @@ class CameraNativeView(
                             resolutionFeature.captureSize.height,
                             30,
                             videoBitRate,
-                            getRotation(cameraFeatures.sensorOrientation.lockedCaptureOrientation)
+                            rotation
                     )) {
+                rtmpCamera.glInterface.setStreamRotation((rotation + 270) % 360)
                 rtmpCamera.startRecord(captureFile!!.absolutePath)
             } else {
                 result.error("videoRecordingFailed", "Error preparing stream, This device cant do it", null)
@@ -211,12 +213,14 @@ class CameraNativeView(
                 } else {
                     resolutionFeature.recordingProfileLegacy.videoBitRate
                 }
+                val rotation = getRotation(cameraFeatures.sensorOrientation.lockedCaptureOrientation)
                 if (rtmpCamera.isRecording || rtmpCamera.prepareAudio() && rtmpCamera.prepareVideo(
                                 resolutionFeature.captureSize.width,
                                 resolutionFeature.captureSize.height,
                                 30,
                                 videoBitRate,
-                                getRotation(cameraFeatures.sensorOrientation.lockedCaptureOrientation))) {
+                                rotation)) {
+                    rtmpCamera.glInterface.setStreamRotation((rotation + 270) % 360)
                     // ready to start streaming
                     rtmpCamera.startStream(url)
                 } else {
@@ -234,10 +238,10 @@ class CameraNativeView(
 
     private fun getRotation(orientation: DeviceOrientation?): Int {
         return when (orientation) {
-            DeviceOrientation.PORTRAIT_UP -> 0
-            DeviceOrientation.PORTRAIT_DOWN -> 180
-            DeviceOrientation.LANDSCAPE_LEFT -> 270
-            DeviceOrientation.LANDSCAPE_RIGHT -> 90
+            DeviceOrientation.PORTRAIT_UP -> 90
+            DeviceOrientation.PORTRAIT_DOWN -> 270
+            DeviceOrientation.LANDSCAPE_LEFT -> 0
+            DeviceOrientation.LANDSCAPE_RIGHT -> 180
             else -> CameraHelper.getCameraOrientation(context)
         }
     }

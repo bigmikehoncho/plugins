@@ -19,7 +19,6 @@ import io.flutter.plugins.camera.CameraPermissions.PermissionsRegistry
 import io.flutter.plugins.camera.features.CameraFeatureFactoryImpl
 import io.flutter.plugins.camera.features.CameraFeatures
 import io.flutter.plugins.camera.features.resolution.ResolutionPreset
-import io.flutter.view.TextureRegistry
 
 internal class MethodCallHandlerImpl(
         private val activity: Activity,
