@@ -63,7 +63,7 @@ class CameraPropertiesImpl implements CameraProperties {
         return cameraCharacteristics.get(CameraCharacteristics.CONTROL_MAX_REGIONS_AF);
     }
     
-    @RequiresApi(api = Build.VERSION_CODES.P)
+    @RequiresApi(api = VERSION_CODES.P)
     @Override
     public int[] getDistortionCorrectionAvailableModes() {
         return cameraCharacteristics.get(CameraCharacteristics.DISTORTION_CORRECTION_AVAILABLE_MODES);
@@ -89,6 +89,18 @@ class CameraPropertiesImpl implements CameraProperties {
         return cameraCharacteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM);
     }
     
+    @RequiresApi(api = VERSION_CODES.R)
+    @Override
+    public Float getScalerMaxZoomRatio() {
+        return cameraCharacteristics.get(CameraCharacteristics.CONTROL_ZOOM_RATIO_RANGE).getUpper();
+    }
+    
+    @RequiresApi(api = VERSION_CODES.R)
+    @Override
+    public Float getScalerMinZoomRatio() {
+        return cameraCharacteristics.get(CameraCharacteristics.CONTROL_ZOOM_RATIO_RANGE).getLower();
+    }
+    
     @Override
     public Rect getSensorInfoActiveArraySize() {
         return cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
@@ -99,7 +111,7 @@ class CameraPropertiesImpl implements CameraProperties {
         return cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE);
     }
     
-    @RequiresApi(api = Build.VERSION_CODES.M)
+    @RequiresApi(api = VERSION_CODES.M)
     @Override
     public Rect getSensorInfoPreCorrectionActiveArraySize() {
         return cameraCharacteristics.get(
