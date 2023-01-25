@@ -359,8 +359,6 @@ class CameraNativeView(
 
     private fun setImageStreamImageAvailableListener(imageStreamSink: EventSink) {
         // For image streaming, use the provided image format or fall back to YUV420.
-
-        // For image streaming, use the provided image format or fall back to YUV420.
         var imageFormat = supportedImageFormats[imageFormatGroup]
         if (imageFormat == null) {
             Log.w("CameraNativeView", "The selected imageFormatGroup is not supported by Android. Defaulting to yuv420")
