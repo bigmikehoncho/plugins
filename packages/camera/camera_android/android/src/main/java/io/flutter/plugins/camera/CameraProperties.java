@@ -150,9 +150,33 @@ public interface CameraProperties {
    * android.hardware.camera2.CameraCharacteristics#SCALER_AVAILABLE_MAX_DIGITAL_ZOOM key.
    *
    * @return Float Maximum ratio between both active area width and crop region width, and active
-   *     area height and crop region height
+   *     area height and crop region height.
    */
   Float getScalerAvailableMaxDigitalZoom();
+
+  /**
+   * Returns the minimum ratio between the default camera zoom setting and all of the available
+   * zoom.
+   *
+   * <p>By default maps to the @see
+   * android.hardware.camera2.CameraCharacteristics#CONTROL_ZOOM_RATIO_RANGE key's lower value.
+   *
+   * @return Float Minimum ratio between the default zoom ratio and the minimum possible zoom.
+   */
+  @RequiresApi(api = VERSION_CODES.R)
+  Float getScalerMinZoomRatio();
+
+  /**
+   * Returns the maximum ratio between the default camera zoom setting and all of the available
+   * zoom.
+   *
+   * <p>By default maps to the @see
+   * android.hardware.camera2.CameraCharacteristics#CONTROL_ZOOM_RATIO_RANGE key's upper value.
+   *
+   * @return Float Maximum ratio between the default zoom ratio and the maximum possible zoom.
+   */
+  @RequiresApi(api = VERSION_CODES.R)
+  Float getScalerMaxZoomRatio();
 
   /**
    * Returns the area of the image sensor which corresponds to active pixels after any geometric
@@ -237,3 +261,126 @@ public interface CameraProperties {
   int[] getAvailableNoiseReductionModes();
 }
 
+/**
+ * Implementation of the @see CameraProperties interface using the @see
+ * android.hardware.camera2.CameraCharacteristics class to access the different characteristics.
+ */
+class CameraPropertiesImpl implements CameraProperties {
+  private final CameraCharacteristics cameraCharacteristics;
+  private final String cameraName;
+
+  public CameraPropertiesImpl(String cameraName, CameraManager cameraManager)
+      throws CameraAccessException {
+    this.cameraName = cameraName;
+    this.cameraCharacteristics = cameraManager.getCameraCharacteristics(cameraName);
+  }
+
+  @Override
+  public String getCameraName() {
+    return cameraName;
+  }
+
+  @Override
+  public Range<Integer>[] getControlAutoExposureAvailableTargetFpsRanges() {
+    return cameraCharacteristics.get(CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES);
+  }
+
+  @Override
+  public Range<Integer> getControlAutoExposureCompensationRange() {
+    return cameraCharacteristics.get(CameraCharacteristics.CONTROL_AE_COMPENSATION_RANGE);
+  }
+
+  @Override
+  public double getControlAutoExposureCompensationStep() {
+    Rational rational =
+        cameraCharacteristics.get(CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP);
+
+    return rational == null ? 0.0 : rational.doubleValue();
+  }
+
+  @Override
+  public int[] getControlAutoFocusAvailableModes() {
+    return cameraCharacteristics.get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES);
+  }
+
+  @Override
+  public Integer getControlMaxRegionsAutoExposure() {
+    return cameraCharacteristics.get(CameraCharacteristics.CONTROL_MAX_REGIONS_AE);
+  }
+
+  @Override
+  public Integer getControlMaxRegionsAutoFocus() {
+    return cameraCharacteristics.get(CameraCharacteristics.CONTROL_MAX_REGIONS_AF);
+  }
+
+  @RequiresApi(api = VERSION_CODES.P)
+  @Override
+  public int[] getDistortionCorrectionAvailableModes() {
+    return cameraCharacteristics.get(CameraCharacteristics.DISTORTION_CORRECTION_AVAILABLE_MODES);
+  }
+
+  @Override
+  public Boolean getFlashInfoAvailable() {
+    return cameraCharacteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE);
+  }
+
+  @Override
+  public int getLensFacing() {
+    return cameraCharacteristics.get(CameraCharacteristics.LENS_FACING);
+  }
+
+  @Override
+  public Float getLensInfoMinimumFocusDistance() {
+    return cameraCharacteristics.get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE);
+  }
+
+  @Override
+  public Float getScalerAvailableMaxDigitalZoom() {
+    return cameraCharacteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM);
+  }
+
+  @RequiresApi(api = VERSION_CODES.R)
+  @Override
+  public Float getScalerMaxZoomRatio() {
+    return cameraCharacteristics.get(CameraCharacteristics.CONTROL_ZOOM_RATIO_RANGE).getUpper();
+  }
+
+  @RequiresApi(api = VERSION_CODES.R)
+  @Override
+  public Float getScalerMinZoomRatio() {
+    return cameraCharacteristics.get(CameraCharacteristics.CONTROL_ZOOM_RATIO_RANGE).getLower();
+  }
+
+  @Override
+  public Rect getSensorInfoActiveArraySize() {
+    return cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
+  }
+
+  @Override
+  public Size getSensorInfoPixelArraySize() {
+    return cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE);
+  }
+
+  @RequiresApi(api = VERSION_CODES.M)
+  @Override
+  public Rect getSensorInfoPreCorrectionActiveArraySize() {
+    return cameraCharacteristics.get(
+        CameraCharacteristics.SENSOR_INFO_PRE_CORRECTION_ACTIVE_ARRAY_SIZE);
+  }
+
+  @Override
+  public int getSensorOrientation() {
+    return cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+  }
+
+  @Override
+  public int getHardwareLevel() {
+    return cameraCharacteristics.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL);
+  }
+
+  @Override
+  public int[] getAvailableNoiseReductionModes() {
+    return cameraCharacteristics.get(
+        CameraCharacteristics.NOISE_REDUCTION_AVAILABLE_NOISE_REDUCTION_MODES);
+  }
+}

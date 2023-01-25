@@ -487,9 +487,13 @@ class CameraController extends ValueNotifier<CameraValue> {
 
   /// Start a video recording.
   ///
+  /// You may optionally pass an [onAvailable] callback to also have the
+  /// video frames streamed to this callback.
+  ///
   /// The video is returned as a [XFile] after calling [stopVideoRecording].
   /// Throws a [CameraException] if the capture fails.
-  Future<void> startVideoRecording() async {
+  Future<void> startVideoRecording(
+      {onLatestImageAvailable? onAvailable}) async {
     _throwIfNotInitialized('startVideoRecording');
     if (value.isRecordingVideo) {
       throw CameraException(
@@ -499,10 +503,12 @@ class CameraController extends ValueNotifier<CameraValue> {
     }
 
     try {
-      await CameraPlatform.instance.startVideoRecording(_cameraId);
+      await CameraPlatform.instance.startVideoCapturing(
+          VideoCaptureOptions(_cameraId, streamCallback: streamCallback));
       value = value.copyWith(
           isRecordingVideo: true,
           isRecordingPaused: false,
+          isStreamingImages: onAvailable != null,
           recordingOrientation:
               value.lockedCaptureOrientation ?? value.deviceOrientation);
     } on PlatformException catch (e) {
@@ -521,6 +527,11 @@ class CameraController extends ValueNotifier<CameraValue> {
         'stopVideoRecording was called when no video is recording.',
       );
     }
+
+    if (value.isStreamingImages) {
+      stopImageStream();
+    }
+
     try {
       final XFile file =
           await CameraPlatform.instance.stopVideoRecording(_cameraId);
