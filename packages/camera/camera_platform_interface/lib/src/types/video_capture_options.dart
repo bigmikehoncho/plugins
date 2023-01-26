@@ -11,7 +11,8 @@ import 'camera_image_data.dart';
 class VideoCaptureOptions {
   /// Constructs a new instance.
   const VideoCaptureOptions(
-    this.cameraId, {
+    this.cameraId,
+      this.filePath, {
     this.maxDuration,
     this.streamCallback,
     this.streamOptions,
@@ -22,6 +23,9 @@ class VideoCaptureOptions {
 
   /// The ID of the camera to use for capturing.
   final int cameraId;
+
+  /// The file path to save the captured video to.
+  final String filePath;
 
   /// The maximum time to perform capturing for.
   ///

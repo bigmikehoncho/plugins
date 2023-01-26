@@ -240,9 +240,10 @@ class MethodChannelCamera extends CameraPlatform {
 
   @override
   Future<void> startVideoRecording(int cameraId,
+      String filePath,
       {Duration? maxVideoDuration}) async {
     return startVideoCapturing(
-        VideoCaptureOptions(cameraId, maxDuration: maxVideoDuration));
+        VideoCaptureOptions(cameraId, filePath, maxDuration: maxVideoDuration));
   }
 
   @override

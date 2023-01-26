@@ -248,9 +248,10 @@ class AndroidCamera extends CameraPlatform {
 
   @override
   Future<void> startVideoRecording(int cameraId,
+      String filePath,
       {Duration? maxVideoDuration}) async {
     return startVideoCapturing(
-        VideoCaptureOptions(cameraId, maxDuration: maxVideoDuration));
+        VideoCaptureOptions(cameraId, filePath, maxDuration: maxVideoDuration));
   }
 
   @override
@@ -259,6 +260,7 @@ class AndroidCamera extends CameraPlatform {
       'startVideoRecording',
       <String, dynamic>{
         'cameraId': options.cameraId,
+        'filePath': options.filePath,
         'maxVideoDuration': options.maxDuration?.inMilliseconds,
         'enableStream': options.streamCallback != null,
       },
@@ -272,12 +274,14 @@ class AndroidCamera extends CameraPlatform {
 
   @override
   Future<void> startVideoRecordingAndStreaming(String url,
+      String filePath,
       int cameraId,
       {int bitrate = 1200 * 1024}) async {
     await _channel.invokeMethod<void>(
         'startVideoRecordingAndStreaming', <String, dynamic>{
       'textureId': cameraId,
       'url': url,
+      'filePath': filePath,
       'bitrate': bitrate,
     });
   }
@@ -316,20 +320,11 @@ class AndroidCamera extends CameraPlatform {
   }
 
   @override
-  Future<XFile> stopVideoRecording(int cameraId) async {
-    final String? path = await _channel.invokeMethod<String>(
+  Future<void> stopVideoRecording(int cameraId) async {
+    await _channel.invokeMethod<String>(
       'stopVideoRecording',
       <String, dynamic>{'cameraId': cameraId},
     );
-
-    if (path == null) {
-      throw CameraException(
-        'INVALID_PATH',
-        'The platform "$defaultTargetPlatform" did not return a path while reporting success. The platform should always return a valid path or report an error.',
-      );
-    }
-
-    return XFile(path);
   }
 
   @override

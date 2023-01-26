@@ -35,6 +35,8 @@ dependency_overrides:
     path: ../camera_android
   camera_platform_interface:
     path: ../camera_platform_interface
+  camera_avfoundation:
+    path: ../camera_avfoundation
 
 dev_dependencies:
   flutter_driver:

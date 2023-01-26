@@ -493,6 +493,7 @@ class CameraController extends ValueNotifier<CameraValue> {
   /// The video is returned as a [XFile] after calling [stopVideoRecording].
   /// Throws a [CameraException] if the capture fails.
   Future<void> startVideoRecording(
+      String filePath,
       {onLatestImageAvailable? onAvailable}) async {
     _throwIfNotInitialized('startVideoRecording');
     if (value.isRecordingVideo) {
@@ -502,9 +503,16 @@ class CameraController extends ValueNotifier<CameraValue> {
       );
     }
 
+    Function(CameraImageData image)? streamCallback;
+    if (onAvailable != null) {
+      streamCallback = (CameraImageData imageData) {
+        onAvailable(CameraImage.fromPlatformInterface(imageData));
+      };
+    }
+
     try {
       await CameraPlatform.instance.startVideoCapturing(
-          VideoCaptureOptions(_cameraId, streamCallback: streamCallback));
+          VideoCaptureOptions(_cameraId, filePath, streamCallback: streamCallback));
       value = value.copyWith(
           isRecordingVideo: true,
           isRecordingPaused: false,
@@ -519,7 +527,7 @@ class CameraController extends ValueNotifier<CameraValue> {
   /// Stops the video recording and returns the file where it was saved.
   ///
   /// Throws a [CameraException] if the capture failed.
-  Future<XFile> stopVideoRecording() async {
+  Future<void> stopVideoRecording() async {
     _throwIfNotInitialized('stopVideoRecording');
     if (!value.isRecordingVideo) {
       throw CameraException(
@@ -533,10 +541,8 @@ class CameraController extends ValueNotifier<CameraValue> {
     }
 
     try {
-      final XFile file =
-          await CameraPlatform.instance.stopVideoRecording(_cameraId);
+      await CameraPlatform.instance.stopVideoRecording(_cameraId);
       value = value.copyWith(isRecordingVideo: false);
-      return file;
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message);
     }
@@ -585,7 +591,9 @@ class CameraController extends ValueNotifier<CameraValue> {
   /// This uses rtmp to do the sending the remote side.
   ///
   /// Throws a [CameraException] if the capture fails.
-  Future<void> startVideoRecordingAndStreaming(String url,
+  Future<void> startVideoRecordingAndStreaming(
+      String filePath,
+      String url,
       {int bitrate = 1200 * 1024}) async {
     if (!value.isInitialized || _isDisposed) {
       throw CameraException(
@@ -614,7 +622,7 @@ class CameraController extends ValueNotifier<CameraValue> {
     }
 
     try {
-      CameraPlatform.instance.startVideoRecordingAndStreaming(url, _cameraId, bitrate: bitrate);
+      CameraPlatform.instance.startVideoRecordingAndStreaming(url, filePath, _cameraId, bitrate: bitrate);
       value =
           value.copyWith(
               isStreamingVideoRtmp: true,

@@ -39,6 +39,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     with WidgetsBindingObserver {
   CameraController? controller;
   String? imagePath;
+  String? videoPath;
   String? url;
   VideoPlayerController? videoController;
   VoidCallback? videoPlayerListener;
@@ -403,7 +404,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       });
     }
     if(controller!.value.isRecordingVideo) {
-      stopVideoRecording().then((String? videoPath) {
+      stopVideoRecording().then((_) {
         if (mounted) setState(() {});
         showInSnackBar('Video recorded to: $videoPath');
       });
@@ -452,36 +453,40 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       return null;
     }
 
+    final Directory? extDir = await getExternalStorageDirectory();
+    final String dirPath = '${extDir?.path}/Movies/flutter_test';
+    await Directory(dirPath).create(recursive: true);
+    final String filePath = '$dirPath/${timestamp()}.mp4';
+
     if (controller!.value.isRecordingVideo) {
       // A recording is already started, do nothing.
       return null;
     }
 
     try {
+      videoPath = filePath;
       controller!.startImageStream((CameraImage image) => debugPrint('MIKE: image stream: ${image.planes.first.bytes.lengthInBytes}'));
-      controller!.startVideoRecording();
+      controller!.startVideoRecording(filePath);
     } on CameraException catch (e) {
       _showCameraException(e);
       return null;
     }
   }
 
-  Future<String?> stopVideoRecording() async {
+  Future<void> stopVideoRecording() async {
     if (!controller!.value.isRecordingVideo) {
       return null;
     }
 
-    XFile file;
     try {
       controller!.stopImageStream();
-      file = await controller!.stopVideoRecording();
+      await controller!.stopVideoRecording();
     } on CameraException catch (e) {
       _showCameraException(e);
       return null;
     }
 
-    await _startVideoPlayer(file.path);
-    return file.path;
+    await _startVideoPlayer();
   }
 
   Future<void> pauseVideoRecording() async {
@@ -558,9 +563,15 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
     String? myUrl = await _getUrl();
 
+    final Directory extDir = await getApplicationDocumentsDirectory();
+    final String dirPath = '${extDir.path}/Movies/flutter_test';
+    await Directory(dirPath).create(recursive: true);
+    final String filePath = '$dirPath/${timestamp()}.mp4';
+
     try {
       url = myUrl;
-      await controller!.startVideoRecordingAndStreaming(url!);
+      videoPath = filePath;
+      await controller!.startVideoRecordingAndStreaming(filePath, url!);
     } on CameraException catch (e) {
       _showCameraException(e);
       return null;
@@ -638,9 +649,9 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     }
   }
 
-  Future<void> _startVideoPlayer(String videoPath) async {
+  Future<void> _startVideoPlayer() async {
     final VideoPlayerController vcontroller =
-    VideoPlayerController.file(File(videoPath));
+    VideoPlayerController.file(File(videoPath!));
     videoPlayerListener = () {
       if (videoController?.value.size != null) {
         // Refreshing the state to update video player with the correct ratio.

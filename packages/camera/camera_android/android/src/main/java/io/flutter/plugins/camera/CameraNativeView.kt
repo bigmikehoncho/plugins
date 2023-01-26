@@ -45,7 +45,6 @@ class CameraNativeView(
 
     private val glView = LightOpenGlView(context)
     private val rtmpCamera: RtmpCamera2
-    private var captureFile: File? = null
 
     private var isSurfaceCreated = false
     private var fps = 0
@@ -150,20 +149,15 @@ class CameraNativeView(
         }
     }
 
-    fun startVideoRecording(result: MethodChannel.Result, imageStreamChannel: EventChannel?) {
+    fun startVideoRecording(filePath: String, result: MethodChannel.Result, imageStreamChannel: EventChannel?) {
         imageStreamChannel?.let { setStreamHandler(it) }
 
-        val outputDir = activity!!.cacheDir
-        try {
-            captureFile = File.createTempFile("REC", ".mp4", outputDir)
-        } catch (e: IOException) {
-            result.error("cannotCreateFile", e.message, null)
-            return
-        } catch (e: SecurityException) {
-            result.error("cannotCreateFile", e.message, null)
+        val file = File(filePath)
+        if (file.exists()) {
+            result.error("fileExists", "File at path '$filePath' already exists. Cannot overwrite.", null)
             return
         }
-        Log.d("CameraNativeView", "startVideoRecording filePath: ${captureFile?.absolutePath} result: $result")
+        Log.d("CameraNativeView", "startVideoRecording filePath: $filePath result: $result")
 
         if (!rtmpCamera.isStreaming) {
             val resolutionFeature = cameraFeatures.resolution
@@ -186,14 +180,15 @@ class CameraNativeView(
                             videoBitRate,
                             rotation
                     )) {
+                // Necessary to stream the correct orientation
                 rtmpCamera.glInterface.setStreamRotation((rotation + 270) % 360)
-                rtmpCamera.startRecord(captureFile!!.absolutePath)
+                rtmpCamera.startRecord(filePath)
             } else {
                 result.error("videoRecordingFailed", "Error preparing stream, This device cant do it", null)
                 return
             }
         } else {
-            rtmpCamera.startRecord(captureFile!!.absolutePath)
+            rtmpCamera.startRecord(filePath)
         }
         result.success(null)
     }
@@ -246,9 +241,11 @@ class CameraNativeView(
         }
     }
 
-    fun startVideoRecordingAndStreaming(url: String?, result: MethodChannel.Result, imageStreamChannel: EventChannel?) {
+    fun startVideoRecordingAndStreaming(filePath: String?, url: String?, result: MethodChannel.Result, imageStreamChannel: EventChannel?) {
         Log.d("CameraNativeView", "startVideoStreaming url: $url")
-        startVideoRecording(result, imageStreamChannel)
+        if (filePath != null) {
+            startVideoRecording(filePath, result, imageStreamChannel)
+        }
         startVideoStreaming(url, result)
     }
 
@@ -266,8 +263,6 @@ class CameraNativeView(
                 if (isStreaming) stopStream()
                 if (isRecording) {
                     stopRecord()
-                    result.success(captureFile!!.absolutePath)
-                    captureFile = null
                 }
             }
             if (!rtmpCamera.isRecording) {
@@ -285,13 +280,9 @@ class CameraNativeView(
             rtmpCamera.apply {
                 if (isRecording) {
                     stopRecord()
-                    result.success(captureFile!!.absolutePath)
-                    captureFile = null
                 }
             }
-            if (!rtmpCamera.isRecording) {
-                result.success(null)
-            }
+            result.success(null)
         } catch (e: CameraAccessException) {
             result.error("stopVideoRecordingFailed", e.message, null)
         } catch (e: IllegalStateException) {

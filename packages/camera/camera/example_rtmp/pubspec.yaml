@@ -26,6 +26,8 @@ dependency_overrides:
     path: ../../camera_platform_interface
   camera_android:
     path: ../../camera_android
+  camera_avfoundation:
+    path: ../../camera_avfoundation
 
 dev_dependencies:
   build_runner: ^2.1.10

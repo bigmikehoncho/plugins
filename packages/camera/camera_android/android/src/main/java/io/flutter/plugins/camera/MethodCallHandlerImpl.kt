@@ -109,6 +109,7 @@ internal class MethodCallHandlerImpl(
             }
             "startVideoRecording" -> {
                 getCameraView()!!.startVideoRecording(
+                        call.argument("filePath")!!,
                         result,
                         if (call.argument<Boolean>("enableStream") == true) imageStreamChannel else null)
             }
@@ -130,6 +131,7 @@ internal class MethodCallHandlerImpl(
             "startVideoRecordingAndStreaming" -> {
                 Log.i(TAG, "startVideoRecordingAndStreaming ${call.arguments}")
                 getCameraView()?.startVideoRecordingAndStreaming(
+                        call.argument("filePath"),
                         call.argument("url"),
                         result,
                         if (call.argument<Boolean>("enableStream") == true) imageStreamChannel else null)
