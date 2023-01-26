@@ -465,8 +465,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
     try {
       videoPath = filePath;
-      controller!.startImageStream((CameraImage image) => debugPrint('MIKE: image stream: ${image.planes.first.bytes.lengthInBytes}'));
-      controller!.startVideoRecording(filePath);
+      controller!.startVideoRecording(filePath, onAvailable: (CameraImage image) => debugPrint('MIKE: image stream: ${image.planes.first.bytes.lengthInBytes}'));
     } on CameraException catch (e) {
       _showCameraException(e);
       return null;
@@ -479,7 +478,6 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     }
 
     try {
-      controller!.stopImageStream();
       await controller!.stopVideoRecording();
     } on CameraException catch (e) {
       _showCameraException(e);
@@ -571,6 +569,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     try {
       url = myUrl;
       videoPath = filePath;
+      controller!.startImageStream((CameraImage image) => debugPrint('MIKE: image stream: ${image.planes.first.bytes.lengthInBytes}'));
       await controller!.startVideoRecordingAndStreaming(filePath, url!);
     } on CameraException catch (e) {
       _showCameraException(e);
