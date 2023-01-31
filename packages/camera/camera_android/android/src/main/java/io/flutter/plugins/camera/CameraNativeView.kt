@@ -167,7 +167,7 @@ class CameraNativeView(
                 resolutionFeature.recordingProfileLegacy.videoBitRate
             }
             val rotation = getRotation(cameraFeatures.sensorOrientation.lockedCaptureOrientation)
-            Log.d("CameraNativeView", "orientation: ${cameraFeatures.sensorOrientation.lockedCaptureOrientation}, captureSize: ${resolutionFeature.captureSize}")
+            Log.d("CameraNativeView", "orientation: ${cameraFeatures.sensorOrientation.lockedCaptureOrientation}, captureSize: ${resolutionFeature.captureSize}, videoBitRate: " + videoBitRate)
             if (rtmpCamera.prepareAudio(64 * 1024,
                             32000,
                             true,
@@ -209,6 +209,7 @@ class CameraNativeView(
                     resolutionFeature.recordingProfileLegacy.videoBitRate
                 }
                 val rotation = getRotation(cameraFeatures.sensorOrientation.lockedCaptureOrientation)
+                Log.d("CameraNativeView", "orientation: ${cameraFeatures.sensorOrientation.lockedCaptureOrientation}, captureSize: ${resolutionFeature.captureSize}, videoBitRate: " + videoBitRate)
                 if (rtmpCamera.isRecording || rtmpCamera.prepareAudio() && rtmpCamera.prepareVideo(
                                 resolutionFeature.captureSize.width,
                                 resolutionFeature.captureSize.height,
